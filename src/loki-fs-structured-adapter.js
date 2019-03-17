@@ -26,7 +26,7 @@
 }(this, function () {
   return (function() {
 
-    const fs = require('fs');
+    const fs = require('react-native-fs');
     const readline = require('readline');
     const stream = require('stream');
 

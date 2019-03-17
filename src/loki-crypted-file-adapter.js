@@ -18,7 +18,7 @@
  * require libs
  * @ignore 
 */
-var fs = require('fs');
+var fs = require('react-native-fs');
 var cryptoLib = require('crypto');
 var isError = require('util').isError;
 

@@ -27,7 +27,7 @@
      * @constructor LokiFsSyncAdapter
      */
     function LokiFsSyncAdapter() {
-      this.fs = require('fs');
+      this.fs = require('react-native-fs');
     }
 
     /**
