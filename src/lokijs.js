@@ -2334,23 +2334,22 @@
      */
     LokiFsAdapter.prototype.loadDatabase = function loadDatabase(dbname, callback) {
       var self = this;
-
-      this.fs.stat(dbname, function (err, stats) {
-        if (!err && stats.isFile()) {
-          self.fs.readFile(dbname, {
-            encoding: 'utf8'
-          }, function readFileCallback(err, data) {
-            if (err) {
-              callback(new Error(err));
-            } else {
-              callback(data);
-            }
-          });
-        }
-        else {
-          callback(null);
-        }
-      });
+      this.fs.stat(
+        dbname,
+      )
+        .then((stats) => {
+          if (stats.isFile()) {
+            return self.fs.readFile(
+              dbname,
+              {
+                encoding: 'utf8',
+              },
+            )
+              .then(callback);
+          }
+          return callback(null);
+        })
+        .catch((err) => callback(new Error(err)));
     };
 
     /**
@@ -2363,13 +2362,14 @@
     LokiFsAdapter.prototype.saveDatabase = function saveDatabase(dbname, dbstring, callback) {
       var self = this;
       var tmpdbname = dbname + '~';
-      this.fs.writeFile(tmpdbname, dbstring, function writeFileCallback(err) {
-        if (err) {
-          callback(new Error(err));
-        } else {
-          self.fs.rename(tmpdbname,dbname,callback);
-        }
-      });
+      this.fs.writeFile(tmpdbname, dbstring)
+        .then(() => {
+          return self.fs.moveFile(
+            tmpdbname,
+            dbname,
+          ).then(callback);
+        })
+        .catch(err => callback(new Error(err)));
     };
 
     /**
@@ -2380,13 +2380,9 @@
      * @memberof LokiFsAdapter
      */
     LokiFsAdapter.prototype.deleteDatabase = function deleteDatabase(dbname, callback) {
-      this.fs.unlink(dbname, function deleteDatabaseCallback(err) {
-        if (err) {
-          callback(new Error(err));
-        } else {
-          callback();
-        }
-      });
+      this.fs.unlink(dbname)
+        .then(callback)
+        .catch(err => callback(new Error(err)));
     };
 
 
@@ -2661,6 +2657,7 @@
           // persistenceAdapter might be asynchronous, so we must clear `dirty` immediately
           // or autosave won't work if an update occurs between here and the callback
           self.autosaveClearFlags();
+
           this.persistenceAdapter.saveDatabase(this.filename, self.serialize(), function saveDatabasecallback(err) {
             cFun(err);
           });
