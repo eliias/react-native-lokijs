@@ -2320,7 +2320,7 @@
      */
     function LokiFsAdapter() {
       try {
-        this.fs = require('react-native-fs');
+        this.fs = require('expo-file-system');
       }catch(e) {
         this.fs = null;
       }

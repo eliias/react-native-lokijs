@@ -53,6 +53,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
+    "expo-file-system": ">=15.4.4",
     "react-native-fs": ">2.13.3"
   },
   "devDependencies": {

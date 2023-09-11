@@ -5,37 +5,34 @@
 }(this, function () {
   return (function () {
 
-    const fs = require('react-native-fs');
+    const fs = require('expo-file-system');
 
-    const accessDataDir = (datadir) => {
-      return new Promise((resolve, reject) => {
-        fs.lstat(datadir, (err, stats) => {
-          if (err) {
-            reject({
-              message: 'Dir does not exist'
-            });
-          }
-          resolve(stats);
-        });
-      });
+    const accessDataDir = async (datadir) => {
+      const fileInfo = await fs.getInfoAsync(datadir);
+      if (!fileInfo.exists || !fileInfo.isDirectory) {
+        throw "Dir does not exist";
+      }
+      return fileInfo;
     };
 
+    const ensureDirectory = async (fileUri) => {
+      await fs.makeDirectoryAsync(fileUri, {intermediates: true});
+    }
+
     const saveRecord = (coll, obj, dir) => {
-      console.log(`File is ${dir}/${coll}/${obj.$loki}.json`);
-      fs.writeFile(`${dir}/${coll}/${obj.$loki}.json`, JSON.stringify(obj), {
-        encoding: 'utf8'
-      }, (err) => {
-        if (err) {
-          console.log('Document save failed.');
-          throw err;
-        }
-        console.log('Document saved correctly');
-      });
+      console.log(`File is db/${dir}/${coll}/${obj.$loki}.json`);
+      const directory = `file://db/${dir}/${coll}`
+      ensureDirectory(directory)
+        .then(() => {
+          fs
+            .writeAsStringAsync(`${directory}/${obj.$loki}.json`, JSON.stringify(obj), {encoding: 'utf8'})
+            .then(() => console.info("Document saved correctly"))
+            .catch(() => console.error("Document save failed"));
+        })
     };
 
     const iterateFolders = (db, dir) => {
-      console.log(`Colls: ${db.listCollections().length}`);
-
+      console.log(`Collections: ${db.listCollections().length}`);
       console.log(`Changes: ${db.generateChangesNotification().length}`);
       db.generateChangesNotification().forEach(change => {
         saveRecord(change.name, change.obj, dir);
